@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TextTagDemo</string>
+    <string name="choose_like">请选择你喜欢的类型</string>
+
 </resources>
