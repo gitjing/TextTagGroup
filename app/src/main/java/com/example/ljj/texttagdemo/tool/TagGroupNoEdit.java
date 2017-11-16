@@ -158,6 +158,8 @@ public class TagGroupNoEdit extends ViewGroup {
      */
     private int verticalPadding;
 
+    private int maxChooseCount;
+
     /**
      * Listener used to dispatch tag change event.
      */
@@ -362,6 +364,11 @@ public class TagGroupNoEdit extends ViewGroup {
         return tagList.toArray(new String[tagList.size()]);
     }
 
+
+    public void setMaxChooseCount(int maxChooseCount) {
+        this.maxChooseCount = maxChooseCount;
+    }
+
     /**
      * @see #setTags(String...)
      */
@@ -397,7 +404,7 @@ public class TagGroupNoEdit extends ViewGroup {
      *
      * @return the checked tag view or null if not exists.
      */
-    protected int getCheckedTagCount() {
+    private int getCheckedTagCount() {
 
         int checkedCount = 0;
         final int count = getChildCount();
@@ -411,7 +418,7 @@ public class TagGroupNoEdit extends ViewGroup {
     }
 
 
-    protected String[] getCheckedTagsIndex() {
+    private String[] getCheckedTagsIndex() {
 
         final int count = getChildCount();
         final List<String> tagList = new ArrayList<>();
@@ -419,6 +426,21 @@ public class TagGroupNoEdit extends ViewGroup {
             final TagView tagView = getTagAt(i);
             if (tagView.isChecked) {
                 tagList.add(i + "");
+            }
+        }
+
+        return tagList.toArray(new String[tagList.size()]);
+    }
+
+
+    public String[] getCheckedTags() {
+
+        final int count = getChildCount();
+        final List<String> tagList = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            final TagView tagView = getTagAt(i);
+            if (tagView.isChecked) {
+                tagList.add(tagView.getText().toString());
             }
         }
 
@@ -536,7 +558,7 @@ public class TagGroupNoEdit extends ViewGroup {
     }
 
     /**
-     * Per-child layout information for layouts.
+     * Per-child layout information for layouts.c
      */
     public static class LayoutParams extends ViewGroup.LayoutParams {
         public LayoutParams(Context c, AttributeSet attrs) {
@@ -606,14 +628,19 @@ public class TagGroupNoEdit extends ViewGroup {
             // then check the clicked tag.
             if (tag.isChecked) {
                 tag.setChecked(false);
+                if (mOnTagClickListener != null) {
+                    mOnTagClickListener.onTagClick(tag.getText().toString());
+                }
                 return;
             }
 
 
-            final int checkedTagCount = getCheckedTagCount();
-            if (checkedTagCount >= 4) {
-                Toast.makeText(getContext(), "最多4个", Toast.LENGTH_SHORT).show();
-                return;
+            if (maxChooseCount > 0) {
+                final int checkedTagCount = getCheckedTagCount();
+                if (checkedTagCount >= maxChooseCount) {
+                    Toast.makeText(getContext(), "最多" + maxChooseCount + "个", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
 
             tag.setChecked(true);
