@@ -365,7 +365,7 @@ public class TagGroupNoEdit extends ViewGroup {
     }
 
 
-    public void setMaxChooseCount(int maxChooseCount) {
+    public void setMaxChooseNum(int maxChooseCount) {
         this.maxChooseCount = maxChooseCount;
     }
 

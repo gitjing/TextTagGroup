@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         tagGroupNoEdit = findViewById(R.id.tag_group);
-        tagGroupNoEdit.setMaxChooseCount(5);
+        tagGroupNoEdit.setMaxChooseNum(5);
         tagGroupNoEdit.setTags(DataManager.tags);
 
 
