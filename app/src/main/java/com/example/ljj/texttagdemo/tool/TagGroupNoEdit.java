@@ -215,12 +215,37 @@ public class TagGroupNoEdit extends ViewGroup {
         }
     }
 
+//    public static int dip2px(Context context, float dpValue) {
+//        if(context == null) {
+//            return 0;
+//        } else {
+//            float scale = context.getResources().getDisplayMetrics().density;
+//            return (int)(dpValue * scale + 0.5F);
+//        }
+//    }
+//
+//    private int measureSize(int measureSpec, int defaultSize) {
+//        int mode = MeasureSpec.getMode(measureSpec);
+//        int size = MeasureSpec.getSize(measureSpec);
+//        int result = defaultSize;
+//
+//        if (mode == MeasureSpec.EXACTLY) {
+//            result = size;
+//        } else if (mode == MeasureSpec.AT_MOST) {
+//            result = Math.max(size, result);
+//        }
+//
+//        return result;
+//    }
+
+
+    int widthSize;
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        final int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        widthSize = MeasureSpec.getSize(widthMeasureSpec);
         final int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
         measureChildren(widthMeasureSpec, heightMeasureSpec);
@@ -280,15 +305,19 @@ public class TagGroupNoEdit extends ViewGroup {
         int childTop = parentTop;
 
         int rowMaxHeight = 0;
+        int oneLineCount = 0;
+        int height = 0;
 
         final int count = getChildCount();
         for (int i = 0; i < count; i++) {
             final View child = getChildAt(i);
             final int width = child.getMeasuredWidth();
-            final int height = child.getMeasuredHeight();
-
+            height = child.getMeasuredHeight();
             if (child.getVisibility() != GONE) {
                 if (childLeft + width > parentRight) { // Next line
+                    // 将已经加载出来的几个按钮水平居中显示出来
+                    adjustLine(oneLineCount, i, childLeft - parentLeft, childTop, childTop + height);
+                    oneLineCount = 0;
                     childLeft = parentLeft;
                     childTop += rowMaxHeight + verticalSpacing;
                     rowMaxHeight = height;
@@ -298,7 +327,25 @@ public class TagGroupNoEdit extends ViewGroup {
                 child.layout(childLeft, childTop, childLeft + width, childTop + height);
 
                 childLeft += width + horizontalSpacing;
+                oneLineCount++;
             }
+        }
+
+        adjustLine(oneLineCount, count, childLeft - parentLeft, childTop, childTop + height);
+
+    }
+
+    /**
+     * @param lineCount 一行子view的个数
+     * @param i         在所有的子view中，第i个的时候超出了行宽，需要换行
+     */
+    private void adjustLine(int lineCount, int i, int childWidth, int top, int bottom) {
+        int totalLeft = (widthSize - childWidth) / 2; // 填充view距离左侧间距
+        for (int lineNum = (i - lineCount); lineNum < i; lineNum++) {
+            View lineChildView = getChildAt(lineNum);
+            int totalRight = totalLeft + lineChildView.getMeasuredWidth();
+            lineChildView.layout(totalLeft, top, totalRight, bottom);
+            totalLeft += lineChildView.getMeasuredWidth() + horizontalPadding;
         }
     }
 
