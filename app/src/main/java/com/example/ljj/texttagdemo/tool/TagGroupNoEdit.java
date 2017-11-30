@@ -160,6 +160,8 @@ public class TagGroupNoEdit extends ViewGroup {
 
     private int maxChooseCount;
 
+    private boolean isChildCenter = false;
+
     /**
      * Listener used to dispatch tag change event.
      */
@@ -215,37 +217,11 @@ public class TagGroupNoEdit extends ViewGroup {
         }
     }
 
-//    public static int dip2px(Context context, float dpValue) {
-//        if(context == null) {
-//            return 0;
-//        } else {
-//            float scale = context.getResources().getDisplayMetrics().density;
-//            return (int)(dpValue * scale + 0.5F);
-//        }
-//    }
-//
-//    private int measureSize(int measureSpec, int defaultSize) {
-//        int mode = MeasureSpec.getMode(measureSpec);
-//        int size = MeasureSpec.getSize(measureSpec);
-//        int result = defaultSize;
-//
-//        if (mode == MeasureSpec.EXACTLY) {
-//            result = size;
-//        } else if (mode == MeasureSpec.AT_MOST) {
-//            result = Math.max(size, result);
-//        }
-//
-//        return result;
-//    }
-
-
-    int widthSize;
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         final int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
         measureChildren(widthMeasureSpec, heightMeasureSpec);
@@ -301,6 +277,8 @@ public class TagGroupNoEdit extends ViewGroup {
         final int parentTop = getPaddingTop();
         final int parentBottom = b - t - getPaddingBottom();
 
+        int parentWidth = r - l;
+
         int childLeft = parentLeft;
         int childTop = parentTop;
 
@@ -315,8 +293,11 @@ public class TagGroupNoEdit extends ViewGroup {
             height = child.getMeasuredHeight();
             if (child.getVisibility() != GONE) {
                 if (childLeft + width > parentRight) { // Next line
-                    // 将已经加载出来的几个按钮水平居中显示出来
-                    adjustLine(oneLineCount, i, childLeft - parentLeft, childTop, childTop + height);
+
+                    if (isChildCenter) {
+                        // 将已经加载出来的几个按钮水平居中显示出来
+                        adjustLine(oneLineCount, i, parentWidth - (childLeft - parentLeft - horizontalSpacing), childTop, childTop + height);
+                    }
                     oneLineCount = 0;
                     childLeft = parentLeft;
                     childTop += rowMaxHeight + verticalSpacing;
@@ -331,7 +312,9 @@ public class TagGroupNoEdit extends ViewGroup {
             }
         }
 
-        adjustLine(oneLineCount, count, childLeft - parentLeft, childTop, childTop + height);
+        if (isChildCenter) {
+            adjustLine(oneLineCount, count, parentWidth - (childLeft - parentLeft - horizontalSpacing), childTop, childTop + height);
+        }
 
     }
 
@@ -340,12 +323,12 @@ public class TagGroupNoEdit extends ViewGroup {
      * @param i         在所有的子view中，第i个的时候超出了行宽，需要换行
      */
     private void adjustLine(int lineCount, int i, int childWidth, int top, int bottom) {
-        int totalLeft = (widthSize - childWidth) / 2; // 填充view距离左侧间距
+        int totalLeft = childWidth / 2; // 填充view距离左侧间距
         for (int lineNum = (i - lineCount); lineNum < i; lineNum++) {
             View lineChildView = getChildAt(lineNum);
             int totalRight = totalLeft + lineChildView.getMeasuredWidth();
             lineChildView.layout(totalLeft, top, totalRight, bottom);
-            totalLeft += lineChildView.getMeasuredWidth() + horizontalPadding;
+            totalLeft += lineChildView.getMeasuredWidth() + horizontalSpacing;
         }
     }
 
@@ -411,6 +394,9 @@ public class TagGroupNoEdit extends ViewGroup {
         return tagList.toArray(new String[tagList.size()]);
     }
 
+    public void setChildCenter(boolean childCenter) {
+        isChildCenter = childCenter;
+    }
 
     public void setMaxChooseNum(int maxChooseCount) {
         this.maxChooseCount = maxChooseCount;
@@ -866,16 +852,6 @@ public class TagGroupNoEdit extends ViewGroup {
             canvas.drawArc(mRightCornerRectF, 0, 90, true, mBackgroundPaint);
             canvas.drawRect(mHorizontalBlankFillRectF, mBackgroundPaint);
             canvas.drawRect(mVerticalBlankFillRectF, mBackgroundPaint);
-
-//            if (isChecked) {
-//                canvas.save();
-//                canvas.rotate(45, mCheckedMarkerBound.centerX(), mCheckedMarkerBound.centerY());
-//                canvas.drawLine(mCheckedMarkerBound.left, mCheckedMarkerBound.centerY(),
-//                        mCheckedMarkerBound.right, mCheckedMarkerBound.centerY(), mCheckedMarkerPaint);
-//                canvas.drawLine(mCheckedMarkerBound.centerX(), mCheckedMarkerBound.top,
-//                        mCheckedMarkerBound.centerX(), mCheckedMarkerBound.bottom, mCheckedMarkerPaint);
-//                canvas.restore();
-//            }
             canvas.drawPath(mBorderPath, mBorderPaint);
             super.onDraw(canvas);
         }
@@ -922,13 +898,6 @@ public class TagGroupNoEdit extends ViewGroup {
                     right - horizontalPadding + CHECKED_MARKER_OFFSET,
                     bottom - h / 2 + m / 2);
 
-            // Ensure the checked mark drawing region is correct across screen orientation changes.
-            if (isChecked) {
-                setPadding(horizontalPadding,
-                        verticalPadding,
-                        (int) (horizontalPadding + h / 2.5f + CHECKED_MARKER_OFFSET),
-                        verticalPadding);
-            }
         }
 
         @Override

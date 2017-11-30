@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
         tagGroupNoEdit = findViewById(R.id.tag_group);
         tagGroupNoEdit.setMaxChooseNum(5);
         tagGroupNoEdit.setTags(DataManager.tags);
+        tagGroupNoEdit.setChildCenter(true);
 
 
         showtags = findViewById(R.id.show_tv);
